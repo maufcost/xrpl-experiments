@@ -1,59 +1,41 @@
 const xrpl = require("xrpl")
 
-// Configure issuer (cold address) settings
-const cold_settings_tx = {
-    "TransactionType": "AccountSet",
-    "Account": cold_wallet.address,
-    "TransferRate": 0,
-    "TickSize": 5,
-    "Domain": "6578616D706C652E636F6D", // "example.com"
-    "SetFlag": xrpl.AccountSetAsfFlags.asfDefaultRipple,
-    // Using tf flags, we can enable more flags in one transaction
-    "Flags": (xrpl.AccountSetTfFlags.tfDisallowXRP | xrpl.AccountSetTfFlags.tfRequireDestTag)
-}
-
-// Configure receiver (hot address) settings
-const hot_settings_tx = {
-    "TransactionType": "AccountSet",
-    "Account": hot_wallet.address,
-    "Domain": "6578616D706C652E636F6D", // "example.com"
-    // enable Require Auth so we can't use trust lines that users
-    // make to the hot address, even by accident:
-    "SetFlag": xrpl.AccountSetAsfFlags.asfRequireAuth,
-    "Flags": (xrpl.AccountSetTfFlags.tfDisallowXRP | xrpl.AccountSetTfFlags.tfRequireDestTag)
-}
-
-const currency_code = "FOO"
-const trust_set_tx = {
-    "TransactionType": "TrustSet",
-    "Account": hot_wallet.address,
-    "LimitAmount": {
-        "currency": currency_code,
-        "issuer": cold_wallet.address,
-        "value": "10000000000" // Large limit, arbitrarily chosen
-    }
-}
-
-const issue_quantity = "3000"
-const send_token_tx = {
-    "TransactionType": "Payment",
-    "Account": cold_wallet.address,
-    "Amount": {
-        "currency": currency_code,
-        "value": issue_quantity,
-        "issuer": cold_wallet.address
-    },
-    "Destination": hot_wallet.address,
-    "DestinationTag": 1 // Needed since we enabled Require Destination Tags
-                        // on the hot account earlier.
-}
-
 // Wrap code in an async function so we can use await
 async function main() {
 
-    // Define the network client
+    // Defining the network client and connecting to the test net
     const client = new xrpl.Client("wss://s.altnet.rippletest.net:51233")
     await client.connect()
+
+    // Getting credentials from the Testnet Faucet
+    console.log("Requesting addresses from the Testnet faucet...")
+
+    const cold_wallet = (await client.fundWallet()).wallet
+    const hot_wallet = (await client.fundWallet()).wallet
+    console.log(`Got hot address ${hot_wallet.address} and cold address ${cold_wallet.address}.`)
+
+    // Configure issuer (cold address) settings
+    const cold_settings_tx = {
+        "TransactionType": "AccountSet",
+        "Account": cold_wallet.address,
+        "TransferRate": 0,
+        "TickSize": 5,
+        "Domain": "6578616D706C652E636F6D", // "example.com"
+        "SetFlag": xrpl.AccountSetAsfFlags.asfDefaultRipple,
+        // Using tf flags, we can enable more flags in one transaction
+        "Flags": (xrpl.AccountSetTfFlags.tfDisallowXRP | xrpl.AccountSetTfFlags.tfRequireDestTag)
+    }
+
+    // Configure receiver (hot address) settings
+    const hot_settings_tx = {
+        "TransactionType": "AccountSet",
+        "Account": hot_wallet.address,
+        "Domain": "6578616D706C652E636F6D", // "example.com"
+        // enable Require Auth so we can't use trust lines that users
+        // make to the hot address, even by accident:
+        "SetFlag": xrpl.AccountSetAsfFlags.asfRequireAuth,
+        "Flags": (xrpl.AccountSetTfFlags.tfDisallowXRP | xrpl.AccountSetTfFlags.tfRequireDestTag)
+    }
 
     // Configuring cold address settings by sending an ACCOUNT SET transaction
     // to the XRP network
@@ -78,9 +60,20 @@ async function main() {
     const hst_result = await client.submitAndWait(hst_signed.tx_blob)
 
     if (hst_result.result.meta.TransactionResult == "tesSUCCESS") {
-    console.log(`Transaction succeeded: https://testnet.xrpl.org/transactions/${hst_signed.hash}`)
+        console.log(`Transaction succeeded: https://testnet.xrpl.org/transactions/${hst_signed.hash}`)
     } else {
-    throw `Error sending transaction: ${hst_result.result.meta.TransactionResult}`
+        throw `Error sending transaction: ${hst_result.result.meta.TransactionResult}`
+    }
+
+    const currency_code = "FOO"
+    const trust_set_tx = {
+        "TransactionType": "TrustSet",
+        "Account": hot_wallet.address,
+        "LimitAmount": {
+            "currency": currency_code,
+            "issuer": cold_wallet.address,
+            "value": "10000000000" // Large limit, arbitrarily chosen
+        }
     }
 
     // Creating trust line from hot to cold address
@@ -94,6 +87,20 @@ async function main() {
         console.log(`Transaction succeeded: https://testnet.xrpl.org/transactions/${ts_signed.hash}`)
     } else {
         throw `Error sending transaction: ${ts_result.result.meta.TransactionResult}`
+    }
+
+    const issue_quantity = "3000"
+    const send_token_tx = {
+        "TransactionType": "Payment",
+        "Account": cold_wallet.address,
+        "Amount": {
+            "currency": currency_code,
+            "value": issue_quantity,
+            "issuer": cold_wallet.address
+        },
+        "Destination": hot_wallet.address,
+        "DestinationTag": 1 // Needed since we enabled Require Destination Tags
+                            // on the hot account earlier.
     }
 
     // Sending token from cold to hot address

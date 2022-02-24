@@ -1,0 +1,51 @@
+Requesting addresses from the Testnet faucet...
+Got hot address rn7kdv1pss8aafMvUrC2p5w6yEPyPMcdSs and cold address rEYJkE6cCNwiZPE88mjs6xLfaJPfZ2spWz.
+
+Sending cold address AccountSet transaction...
+Transaction succeeded: https://testnet.xrpl.org/transactions/F7C891CE3A3CE36BCC9F251F406EF3A3DBEB286FB65982FECBCE5DF5A9997E76
+
+Sending hot address AccountSet transaction...
+Transaction succeeded: https://testnet.xrpl.org/transactions/7369F20EC840D81591AB937DE80EE8BFD4C83EBEFEED301F343494E40FB32868
+
+Creating trust line from hot address to issuer...
+Transaction succeeded: https://testnet.xrpl.org/transactions/90AD573FE98FF78D69C4D49CCC930B5CCF86F678A7343A7ECB82E7594E978A6C
+
+Sending 3000 FOO to rn7kdv1pss8aafMvUrC2p5w6yEPyPMcdSs...
+Transaction succeeded: https://testnet.xrpl.org/transactions/0CC83FE5ED3DF5AED79318966EBDBED888B2D8BEDD0DFE9AE922E4CCEEF7E737
+
+Getting hot address balances...
+{
+  account: 'rn7kdv1pss8aafMvUrC2p5w6yEPyPMcdSs',
+  ledger_hash: '23547CCE52822782FFB48AABDF9259035EFE2B62D42C15D564805FE19E037449',
+  ledger_index: 25575556,
+  lines: [
+    {
+      account: 'rEYJkE6cCNwiZPE88mjs6xLfaJPfZ2spWz',
+      balance: '3000',
+      currency: 'FOO',
+      limit: '10000000000',
+      limit_peer: '0',
+      no_ripple: false,
+      no_ripple_peer: false,
+      quality_in: 0,
+      quality_out: 0
+    }
+  ],
+  validated: true
+}
+
+Getting cold address balances...
+{
+  "account": "rEYJkE6cCNwiZPE88mjs6xLfaJPfZ2spWz",
+  "balances": {
+    "rn7kdv1pss8aafMvUrC2p5w6yEPyPMcdSs": [
+      {
+        "currency": "FOO",
+        "value": "3000"
+      }
+    ]
+  },
+  "ledger_hash": "23547CCE52822782FFB48AABDF9259035EFE2B62D42C15D564805FE19E037449",
+  "ledger_index": 25575556,
+  "validated": true
+}
